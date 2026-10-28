@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CFB Playoff Sandbox</title>
+<style>
+:root{--bg:#0f1420;--card:#192033;--ink:#eef2fb;--mut:#93a0bd;--a:#f5b700;--b:#4cc3ff}
+*{box-sizing:border-box}body{margin:0;font:15px/1.4 system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+header{padding:22px 16px 6px;text-align:center}h1{margin:0;font-size:26px}header p{color:var(--mut);margin:6px 0 0}
+main{max-width:900px;margin:14px auto;padding:0 12px}
+button,select{background:var(--card);color:var(--ink);border:1px solid #2c3858;border-radius:9px;padding:10px 14px;font:inherit;cursor:pointer}
+button.p{background:var(--a);color:#111;border:0;font-weight:700}button:hover{filter:brightness(1.15)}
+.ptxt{flex:1;min-width:160px;background:var(--card);color:var(--ink);border:1px solid #2c3858;border-radius:9px;padding:10px 14px;font:inherit}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tbcard{background:var(--card);border-radius:12px;padding:14px 16px;margin-bottom:12px}
+.tbcard h3{margin:0 0 6px;font-size:18px}
+.tbcard .sub2{color:var(--mut);font-size:13px;margin-bottom:8px}
+.tbcard a{color:var(--b)}
+h2.s{font-size:16px;margin:14px 0 6px;color:var(--ink)}
+table{width:100%;border-collapse:collapse}td,th{padding:4px 6px;text-align:left}th{color:var(--mut);font-weight:500}
+.gw{cursor:pointer;border-radius:6px;padding:2px 6px;touch-action:manipulation}
+.gw:hover{background:#2c3858}
+.gw.sel{background:var(--a);color:#111;font-weight:700}
+.gline{padding:2px 0}
+.gdate{color:var(--mut);font-size:13px;margin:10px 0 2px;border-top:1px solid #2c3858;padding-top:8px}
+.tgreason{color:var(--mut);font-size:13px;padding:0 0 6px 0}
+.pbadge{font-size:10px;color:#ffb347;border:1px solid #ffb347;border-radius:4px;padding:0 4px;margin-left:6px;vertical-align:middle}
+.provv{color:#ffb347;font-size:12px;margin-top:6px}
+.sw{display:block;width:100%;background:none;border:1px dashed #ffb347;color:#ffb347;border-radius:6px;padding:3px 6px;margin:2px 0;cursor:pointer;font-size:12px;text-align:left;touch-action:manipulation}
+tr.provrow td{background:#241d10}
+.sc{color:var(--mut);font-variant-numeric:tabular-nums}
+.xl{background:var(--card);color:var(--ink);border:1px solid #2c3858;border-radius:9px;padding:10px 14px;font:inherit;text-decoration:none;display:inline-block}.xl:hover{filter:brightness(1.15)}
+/* nav */
+.nav{position:relative;max-width:900px;margin:10px auto 0;padding:0 12px}
+#burger{display:none;font-size:20px;padding:8px 14px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+@media(max-width:760px){
+ #burger{display:block;margin:0 auto}
+ .tabs{display:none;flex-direction:column;position:absolute;left:12px;right:12px;top:48px;background:var(--card);border:1px solid #2c3858;border-radius:12px;padding:10px;z-index:50;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+ .tabs.open{display:flex}
+ .tabs button,.tabs a{text-align:center}
+}
+/* playoff */
+.rk{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:8px;cursor:pointer;touch-action:manipulation}
+.rk:hover{background:#232c45}
+.rk.sel{background:var(--a);color:#111}
+.rk.sel .rc{color:#333}
+.rn{flex:0 0 30px;color:var(--mut);text-align:right;font-variant-numeric:tabular-nums}
+.rk.sel .rn{color:#333}
+.rt{flex:1;font-weight:600}
+.rc{color:var(--mut);font-size:12px}
+.chip2{display:inline-block;background:#232c45;border-radius:7px;padding:5px 10px;margin:3px 4px 0 0;font-size:13px}
+.byepill{background:var(--b);color:#06283a;border-radius:6px;padding:1px 8px;font-size:12px;font-weight:700}
+.note{color:var(--mut);font-size:13px;text-align:center;margin:16px 0}
+</style></head><body>
+<header><h1>CFB Playoff Sandbox</h1><p>Play out the Power 4 races, move teams in the ranking, and watch the 12-team playoff field change. Deep-dive tools live on the sister sites.</p></header>
+<div class="nav">
+<button id="burger" aria-label="Open menu">&#9776; Menu</button>
+<div class="tabs" id="tabs">
+<button class="tabbtn" data-v="Playoff">Playoff</button><button class="tabbtn" data-v="SEC">SEC</button><button class="tabbtn" data-v="Big Ten">Big Ten</button><button class="tabbtn" data-v="ACC">ACC</button><button class="tabbtn" data-v="Big 12">Big 12</button>
+<a class="xl" href="https://pouchman27.github.io/big12-standings/">Big 12 deep dive</a>
+<a class="xl" href="https://pouchman27.github.io/big12-scheduler/">Mock Scheduler</a>
+</div>
+</div>
+<main>
+<div id="view-Playoff" class="cview">
+<div class="tbcard"><h3>2026-27 playoff sandbox</h3>
+<div class="sub2" id="rk-src">Loading...</div>
+<div class="sub2">Format: champions of the SEC, Big Ten, Big 12 and ACC are in automatically; the highest-ranked Group of 6 team is in automatically; Notre Dame is in if it finishes in the top 12. The rest of the 12-team field is at-large by ranking, and seeding is straight 1-12 by ranking - the top four seeds get byes. Source: <a href="https://www.ncaa.com/news/football/article/2026-02-03/how-college-football-playoff-works-schedule-selections-rankings-byes-and-more" target="_blank" rel="noopener">NCAA.com format explainer</a>.</div>
+<div id="champs"></div>
+<div id="ranklist"></div>
+<div class="bar" style="margin:10px 0"><button id="rk-reset">Reset ranking to the poll</button></div>
+<div id="field"></div>
+<div id="bracket"></div>
+</div>
+</div>
+<div id="view-SEC" class="cview" style="display:none">
+<div class="tbcard"><h3>SEC - what-if scenario</h3>
+<div class="sub2" id="src-SEC">Loading data...</div>
+<div class="bar" style="justify-content:flex-start;margin:8px 0">
+<select id="m-SEC"><option value="fpi">ESPN FPI</option><option value="elo">Elo-style (from 2026 results)</option><option value="flip">Coin flip (50/50)</option></select>
+<button id="auto-SEC">Auto-pick remaining favorites</button>
+<button id="reset-SEC">Reset to real results</button>
+</div>
+<div class="sub2" style="margin-top:4px"><b>Or describe a scenario:</b> type it in plain English and the game picks below get set for you.</div>
+<div class="bar" style="justify-content:flex-start;margin:2px 0 8px">
+<input class="ptxt" id="p-SEC" type="text" placeholder="e.g. Alabama wins out, Arkansas loses to Auburn" autocomplete="off">
+<button class="p" id="pa-SEC">Apply scenario</button>
+</div>
+<div id="po-SEC"></div>
+<div id="games-SEC"></div>
+<div id="stand-SEC"></div>
+<div id="champ-SEC"></div>
+<div id="tb-SEC"></div>
+</div>
+</div><div id="view-Big Ten" class="cview" style="display:none">
+<div class="tbcard"><h3>Big Ten - what-if scenario</h3>
+<div class="sub2" id="src-Big Ten">Loading data...</div>
+<div class="bar" style="justify-content:flex-start;margin:8px 0">
+<select id="m-Big Ten"><option value="fpi">ESPN FPI</option><option value="elo">Elo-style (from 2026 results)</option><option value="flip">Coin flip (50/50)</option></select>
+<button id="auto-Big Ten">Auto-pick remaining favorites</button>
+<button id="reset-Big Ten">Reset to real results</button>
+</div>
+<div class="sub2" style="margin-top:4px"><b>Or describe a scenario:</b> type it in plain English and the game picks below get set for you.</div>
+<div class="bar" style="justify-content:flex-start;margin:2px 0 8px">
+<input class="ptxt" id="p-Big Ten" type="text" placeholder="e.g. Illinois wins out, Indiana loses to Iowa" autocomplete="off">
+<button class="p" id="pa-Big Ten">Apply scenario</button>
+</div>
+<div id="po-Big Ten"></div>
+<div id="games-Big Ten"></div>
+<div id="stand-Big Ten"></div>
+<div id="champ-Big Ten"></div>
+<div id="tb-Big Ten"></div>
+</div>
+</div><div id="view-ACC" class="cview" style="display:none">
+<div class="tbcard"><h3>ACC - what-if scenario</h3>
+<div class="sub2" id="src-ACC">Loading data...</div>
+<div class="bar" style="justify-content:flex-start;margin:8px 0">
+<select id="m-ACC"><option value="fpi">ESPN FPI</option><option value="elo">Elo-style (from 2026 results)</option><option value="flip">Coin flip (50/50)</option></select>
+<button id="auto-ACC">Auto-pick remaining favorites</button>
+<button id="reset-ACC">Reset to real results</button>
+</div>
+<div class="sub2" style="margin-top:4px"><b>Or describe a scenario:</b> type it in plain English and the game picks below get set for you.</div>
+<div class="bar" style="justify-content:flex-start;margin:2px 0 8px">
+<input class="ptxt" id="p-ACC" type="text" placeholder="e.g. Boston College wins out, California loses to Clemson" autocomplete="off">
+<button class="p" id="pa-ACC">Apply scenario</button>
+</div>
+<div id="po-ACC"></div>
+<div id="games-ACC"></div>
+<div id="stand-ACC"></div>
+<div id="champ-ACC"></div>
+<div id="tb-ACC"></div>
+</div>
+</div><div id="view-Big 12" class="cview" style="display:none">
+<div class="tbcard"><h3>Big 12 - what-if scenario</h3>
+<div class="sub2" id="src-Big 12">Loading data...</div>
+<div class="bar" style="justify-content:flex-start;margin:8px 0">
+<select id="m-Big 12"><option value="fpi">ESPN FPI</option><option value="elo">Elo-style (from 2026 results)</option><option value="flip">Coin flip (50/50)</option></select>
+<button id="auto-Big 12">Auto-pick remaining favorites</button>
+<button id="reset-Big 12">Reset to real results</button>
+</div>
+<div class="sub2" style="margin-top:4px"><b>Or describe a scenario:</b> type it in plain English and the game picks below get set for you.</div>
+<div class="bar" style="justify-content:flex-start;margin:2px 0 8px">
+<input class="ptxt" id="p-Big 12" type="text" placeholder="e.g. Arizona wins out, Arizona State loses to BYU" autocomplete="off">
+<button class="p" id="pa-Big 12">Apply scenario</button>
+</div>
+<div id="po-Big 12"></div>
+<div id="games-Big 12"></div>
+<div id="stand-Big 12"></div>
+<div id="champ-Big 12"></div>
+<div id="tb-Big 12"></div>
+</div>
+</div>
+<div class="note">Results, schedules and FPI refresh from ESPN on each visit; if ESPN is unreachable the app falls back to a verified Oct 28, 2026 snapshot and says so. Your scenario picks and ranking moves save on this device only. Tiebreakers follow each conference's published procedure; steps that aren't computable on-field are labeled and resolve randomly. Sister site: <a style="color:var(--b)" href="https://pouchman27.github.io/big12-standings/">Big 12 Standings &amp; Scenarios</a>.</div>
+</main>
+<script>
+const DATA={"SEC":{"teams":["Alabama","Arkansas","Auburn","Florida","Georgia","Kentucky","LSU","Mississippi State","Missouri","Oklahoma","Ole Miss","South Carolina","Tennessee","Texas","Texas A&M","Vanderbilt"],"rec":{"Kentucky":[5,1,7,1],"Alabama":[4,2,6,2],"Arkansas":[1,3,3,4],"Georgia":[4,1,6,1],"Ole Miss":[3,2,5,2],"LSU":[3,2,6,2],"Texas A&M":[1,4,4,4],"South Carolina":[2,3,4,3],"Mississippi State":[2,3,4,3],"Auburn":[2,3,4,3],"Florida":[3,2,5,2],"Tennessee":[3,2,6,2],"Texas":[2,2,5,2],"Oklahoma":[2,2,4,3],"Missouri":[2,2,5,2],"Vanderbilt":[0,5,3,5]},"rem":[["Auburn","Ole Miss","2026-10-31"],["Florida","Georgia","2026-10-31"],["South Carolina","Oklahoma","2026-10-31"],["Mississippi State","Texas","2026-10-31"],["Missouri","Arkansas","2026-10-31"],["Texas","Missouri","2026-11-07"],["Arkansas","Auburn","2026-11-07"],["Texas A&M","South Carolina","2026-11-07"],["Alabama","LSU","2026-11-07"],["Vanderbilt","Mississippi State","2026-11-07"],["Kentucky","Tennessee","2026-11-07"],["Georgia","Ole Miss","2026-11-08"],["Oklahoma","Florida","2026-11-08"],["Missouri","Georgia","2026-11-14"],["Florida","Kentucky","2026-11-14"],["Alabama","Vanderbilt","2026-11-14"],["Texas","LSU","2026-11-14"],["Ole Miss","Oklahoma","2026-11-14"],["Tennessee","Texas A&M","2026-11-14"],["South Carolina","Arkansas","2026-11-14"],["Auburn","Mississippi State","2026-11-14"],["Georgia","South Carolina","2026-11-21"],["Kentucky","Missouri","2026-11-21"],["Arkansas","Texas","2026-11-21"],["LSU","Tennessee","2026-11-21"],["Vanderbilt","Florida","2026-11-21"],["Texas A&M","Oklahoma","2026-11-21"],["Mississippi State","Ole Miss","2026-11-27"],["Texas","Texas A&M","2026-11-28"],["Auburn","Alabama","2026-11-28"],["LSU","Arkansas","2026-11-28"],["Tennessee","Vanderbilt","2026-11-28"],["Oklahoma","Missouri","2026-11-28"]],"done":[["Alabama","Kentucky",45,17,"2026-09-12"],["Georgia","Arkansas",45,17,"2026-09-19"],["LSU","Ole Miss",24,32,"2026-09-19"],["Kentucky","Texas A&M",31,21,"2026-09-19"],["Mississippi State","South Carolina",41,34,"2026-09-19"],["Florida","Auburn",44,39,"2026-09-19"],["Texas","Tennessee",20,17,"2026-09-26"],["Oklahoma","Georgia",13,41,"2026-09-26"],["Ole Miss","Florida",28,52,"2026-09-26"],["South Carolina","Alabama",18,49,"2026-09-26"],["Texas A&M","LSU",6,35,"2026-09-26"],["Missouri","Mississippi State",24,31,"2026-09-26"],["Vanderbilt","Auburn",15,21,"2026-09-26"],["Vanderbilt","Georgia",14,38,"2026-10-03"],["Alabama","Mississippi State",56,23,"2026-10-03"],["Florida","Missouri",17,45,"2026-10-03"],["Auburn","Tennessee",14,24,"2026-10-03"],["Kentucky","South Carolina",35,34,"2026-10-03"],["Arkansas","Texas A&M",7,34,"2026-10-03"],["Texas","Oklahoma",24,27,"2026-10-10"],["Georgia","Alabama",20,17,"2026-10-10"],["Ole Miss","Vanderbilt",52,17,"2026-10-10"],["LSU","Kentucky",34,35,"2026-10-10"],["Texas A&M","Missouri",6,27,"2026-10-10"],["Tennessee","Arkansas",24,17,"2026-10-10"],["South Carolina","Florida",38,19,"2026-10-10"],["Auburn","Georgia",27,24,"2026-10-17"],["Alabama","Tennessee",10,26,"2026-10-17"],["Florida","Texas",27,24,"2026-10-17"],["Missouri","Ole Miss",3,31,"2026-10-17"],["Kentucky","Oklahoma",21,13,"2026-10-17"],["Mississippi State","LSU",0,31,"2026-10-17"],["Arkansas","Vanderbilt",31,21,"2026-10-17"],["Ole Miss","Texas",27,34,"2026-10-24"],["Tennessee","South Carolina",24,27,"2026-10-24"],["Vanderbilt","Kentucky",17,34,"2026-10-24"],["Texas A&M","Alabama",20,31,"2026-10-24"],["LSU","Auburn",38,17,"2026-10-24"],["Oklahoma","Mississippi State",23,15,"2026-10-24"]],"allg":[["142","2029",54,14],["201","2638",51,0],["61","2634",63,3],["251","326",59,7],["245","2623",50,0],["99","228",51,10],["333","151",48,10],["2633","231",56,9],["2579","2309",57,0],["96","2754",45,13],["2","239",17,16],["8","2453",31,14],["238","2046",28,9],["344","2433",62,13],["57","2226",66,21],["145","97",41,38],["2305","142",21,38],["251","194",24,23],["61","98",70,20],["99","2348",45,14],["145","2429",41,9],["245","9",48,20],["130","201",17,10],["96","333",17,45],["59","2633",24,45],["254","8",43,10],["135","344",13,38],["238","48",35,26],["57","2097",52,3],["2579","119",45,9],["2","2572",43,8],["251","2636",30,6],["8","61",17,45],["145","99",32,24],["245","96",21,31],["333","52",50,36],["2633","338",42,9],["142","2653",27,17],["201","167",14,6],["238","152",35,31],["2579","344",34,41],["2","57",39,44],["2633","251",17,20],["61","201",41,13],["57","145",52,28],["333","2579",49,18],["99","245",35,6],["344","142",31,24],["96","6",45,21],["2","238",21,15],["8","202",34,6],["61","238",38,14],["344","333",23,56],["142","57",45,17],["99","2377",63,14],["2633","2",24,14],["2579","96",34,35],["245","8",34,7],["201","251",27,24],["333","61",17,20],["238","145",17,52],["96","99",35,34],["142","245",27,6],["8","2633",17,24],["57","2579",19,38],["61","2",24,27],["2633","333",26,10],["251","57",24,27],["145","142",31,3],["201","96",13,21],["99","344",31,0],["245","2643",41,0],["238","8",21,31],["251","145",34,27],["2579","2633",27,24],["96","238",34,17],["333","245",31,20],["2","99",17,38],["344","201",15,23]],"fpi":{"Kentucky":13.1,"Alabama":24.5,"Arkansas":2.0,"Georgia":26.4,"Ole Miss":18.9,"LSU":24.0,"Texas A&M":13.5,"South Carolina":12.4,"Mississippi State":8.5,"Auburn":12.1,"Florida":14.5,"Tennessee":16.8,"Texas":24.0,"Oklahoma":14.1,"Missouri":12.2,"Vanderbilt":0.4},"live":false},"Big Ten":{"teams":["Illinois","Indiana","Iowa","Maryland","Michigan","Michigan State","Minnesota","Nebraska","Northwestern","Ohio State","Oregon","Penn State","Purdue","Rutgers","UCLA","USC","Washington","Wisconsin"],"rec":{"Rutgers":[1,3,2,5],"USC":[3,2,6,2],"UCLA":[5,0,7,0],"Purdue":[2,2,3,4],"Indiana":[4,1,7,1],"Northwestern":[3,1,6,1],"Ohio State":[4,0,6,1],"Illinois":[2,2,4,3],"Oregon":[2,2,4,3],"Penn State":[0,4,3,4],"Wisconsin":[3,1,5,2],"Michigan":[1,3,4,3],"Iowa":[2,2,5,2],"Maryland":[0,4,2,5],"Michigan State":[0,5,2,6],"Nebraska":[2,2,5,2],"Washington":[1,3,4,3],"Minnesota":[3,1,5,2]},"rem":[["Wisconsin","Iowa","2026-10-31"],["Illinois","Maryland","2026-10-31"],["Michigan","Rutgers","2026-10-31"],["Minnesota","Indiana","2026-10-31"],["Northwestern","Oregon","2026-10-31"],["Purdue","Penn State","2026-10-31"],["Ohio State","USC","2026-10-31"],["Washington","Nebraska","2026-11-01"],["Nebraska","Illinois","2026-11-07"],["UCLA","Minnesota","2026-11-07"],["Iowa","Northwestern","2026-11-07"],["Michigan State","Michigan","2026-11-07"],["Penn State","Washington","2026-11-07"],["Rutgers","Wisconsin","2026-11-07"],["Maryland","Purdue","2026-11-07"],["Oregon","Ohio State","2026-11-07"],["Illinois","UCLA","2026-11-14"],["Northwestern","Ohio State","2026-11-14"],["USC","Indiana","2026-11-14"],["Wisconsin","Maryland","2026-11-14"],["Purdue","Iowa","2026-11-14"],["Washington","Michigan State","2026-11-14"],["Michigan","Oregon","2026-11-14"],["Minnesota","Penn State","2026-11-14"],["Nebraska","Rutgers","2026-11-14"],["Oregon","Michigan State","2026-11-21"],["Ohio State","Nebraska","2026-11-21"],["Indiana","Washington","2026-11-21"],["UCLA","Michigan","2026-11-21"],["Northwestern","Minnesota","2026-11-21"],["Wisconsin","Purdue","2026-11-21"],["Iowa","Illinois","2026-11-21"],["Rutgers","Penn State","2026-11-21"],["Maryland","USC","2026-11-21"],["Nebraska","Iowa","2026-11-27"],["Minnesota","Wisconsin","2026-11-28"],["Purdue","Indiana","2026-11-28"],["USC","UCLA","2026-11-28"],["Illinois","Northwestern","2026-11-28"],["Penn State","Maryland","2026-11-28"],["Washington","Oregon","2026-11-28"],["Michigan State","Rutgers","2026-11-28"],["Michigan","Ohio State","2026-11-28"]],"done":[["USC","Rutgers",42,35,"2026-09-19"],["Purdue","UCLA",38,52,"2026-09-20"],["Northwestern","Indiana",23,29,"2026-09-26"],["Illinois","Ohio State",19,42,"2026-09-26"],["Oregon","USC",41,27,"2026-09-26"],["Wisconsin","Penn State",24,20,"2026-09-26"],["Iowa","Michigan",20,19,"2026-09-26"],["UCLA","Maryland",54,3,"2026-09-26"],["Nebraska","Michigan State",31,13,"2026-09-26"],["Minnesota","Washington",27,24,"2026-09-27"],["Penn State","Northwestern",13,34,"2026-10-03"],["Ohio State","Iowa",31,14,"2026-10-03"],["Washington","USC",21,25,"2026-10-03"],["Michigan","Minnesota",14,20,"2026-10-03"],["Michigan State","Wisconsin",3,31,"2026-10-03"],["Maryland","Nebraska",23,48,"2026-10-03"],["Purdue","Illinois",24,17,"2026-10-03"],["Indiana","Rutgers",47,15,"2026-10-04"],["Iowa","Washington",41,24,"2026-10-10"],["Maryland","Ohio State",16,45,"2026-10-10"],["Indiana","Nebraska",20,17,"2026-10-10"],["UCLA","Oregon",17,15,"2026-10-10"],["USC","Penn State",31,23,"2026-10-10"],["Illinois","Michigan State",38,37,"2026-10-10"],["Minnesota","Purdue",13,41,"2026-10-11"],["Washington","Purdue",38,26,"2026-10-17"],["Ohio State","Indiana",19,15,"2026-10-17"],["Wisconsin","UCLA",7,17,"2026-10-17"],["Northwestern","Michigan State",24,21,"2026-10-17"],["Rutgers","Maryland",37,30,"2026-10-17"],["Penn State","Michigan",18,21,"2026-10-17"],["Nebraska","Oregon",14,17,"2026-10-18"],["Indiana","Michigan",13,6,"2026-10-24"],["Michigan State","UCLA",10,28,"2026-10-24"],["Iowa","Minnesota",10,13,"2026-10-24"],["USC","Wisconsin",7,24,"2026-10-24"],["Rutgers","Northwestern",14,42,"2026-10-24"],["Oregon","Illinois",10,21,"2026-10-24"]],"allg":[["30","23",42,26],["164","113",21,37],["135","2197",59,7],["356","5",42,23],["30","278",39,0],["2509","282",44,19],["127","2649",30,20],["194","2050",56,3],["2483","68",34,27],["84","249",52,16],["130","2711",13,12],["213","276",45,0],["2294","2459",40,0],["158","195",49,21],["120","2261",62,0],["77","2571",34,18],["25","26",24,45],["87","275",41,13],["264","265",24,10],["103","164",28,21],["251","194",24,23],["84","47",55,0],["197","2483",39,31],["130","201",17,10],["30","309",49,30],["218","213",9,27],["264","328",16,14],["2294","66",16,13],["2509","154",36,38],["135","344",13,38],["356","150",27,31],["127","2199",35,7],["41","120",14,38],["158","189",56,7],["26","21",28,10],["275","2710",36,9],["2483","2502",84,0],["87","127",27,10],["84","98",38,0],["194","2309",59,3],["164","30",35,42],["213","2084",55,13],["2294","2460",55,0],["130","2638",52,17],["135","2006",41,7],["275","2199",54,10],["356","79",48,10],["158","155",34,7],["264","331",48,16],["77","38",41,7],["120","259",26,35],["26","2509",52,38],["84","77",29,23],["164","47",58,7],["2509","87",10,49],["194","356",42,19],["30","2483",27,41],["213","275",20,24],["130","2294",19,20],["120","26",3,54],["127","158",13,31],["264","135",24,27],["77","213",34,13],["2294","194",14,31],["164","84",15,47],["30","264",25,21],["135","130",20,14],["275","127",31,3],["158","120",48,23],["356","2509",17,24],["264","2294",24,41],["194","120",45,16],["158","84",17,20],["2483","26",15,17],["213","30",23,31],["77","2050",45,14],["127","356",37,38],["2509","135",41,13],["2509","264",26,38],["84","194",15,19],["26","275",17,7],["127","77",21,24],["120","164",30,37],["130","213",21,18],["2483","158",17,14],["130","84",6,13],["26","127",28,10],["135","2294",13,10],["275","30",24,7],["77","164",42,14],["356","2483",21,10]],"fpi":{"Rutgers":-4.4,"USC":12.7,"UCLA":11.7,"Purdue":2.2,"Indiana":24.0,"Northwestern":13.8,"Ohio State":28.2,"Illinois":6.4,"Oregon":17.0,"Penn State":11.9,"Wisconsin":10.7,"Michigan":11.1,"Iowa":11.1,"Maryland":-3.9,"Michigan State":1.2,"Nebraska":16.7,"Washington":4.5,"Minnesota":0.7},"live":false},"ACC":{"teams":["Boston College","California","Clemson","Duke","Florida State","Georgia Tech","Louisville","Miami","NC State","North Carolina","Pittsburgh","SMU","Stanford","Syracuse","Virginia","Virginia Tech","Wake Forest"],"rec":{"Virginia":[2,3,4,4],"NC State":[1,3,3,4],"Stanford":[2,3,4,4],"Miami":[5,0,7,0],"Florida State":[1,3,3,4],"SMU":[4,1,6,1],"Syracuse":[1,4,3,4],"California":[2,3,3,5],"Pittsburgh":[2,3,5,3],"Wake Forest":[4,1,6,1],"Louisville":[3,2,4,3],"Clemson":[2,2,4,3],"North Carolina":[2,2,4,3],"Duke":[2,2,5,2],"Boston College":[2,2,4,3],"Virginia Tech":[3,2,6,2],"Georgia Tech":[1,3,2,5]},"rem":[["SMU","Syracuse","2026-10-31"],["California","NC State","2026-10-31"],["Boston College","Duke","2026-10-31"],["Stanford","Louisville","2026-10-31"],["Virginia","Wake Forest","2026-10-31"],["Clemson","Florida State","2026-10-31"],["Miami","North Carolina","2026-10-31"],["Georgia Tech","Pittsburgh","2026-10-31"],["Virginia Tech","SMU","2026-11-07"],["Clemson","Syracuse","2026-11-07"],["Florida State","Boston College","2026-11-07"],["Duke","NC State","2026-11-07"],["Louisville","Georgia Tech","2026-11-08"],["Florida State","Pittsburgh","2026-11-14"],["Duke","Miami","2026-11-14"],["Wake Forest","SMU","2026-11-14"],["California","Virginia","2026-11-14"],["Georgia Tech","Clemson","2026-11-14"],["Louisville","North Carolina","2026-11-14"],["Stanford","Virginia Tech","2026-11-14"],["Syracuse","NC State","2026-11-14"],["Clemson","Duke","2026-11-21"],["Virginia Tech","Miami","2026-11-21"],["Wake Forest","Georgia Tech","2026-11-21"],["NC State","Florida State","2026-11-21"],["North Carolina","Virginia","2026-11-21"],["Pittsburgh","Louisville","2026-11-21"],["Stanford","California","2026-11-21"],["Syracuse","Boston College","2026-11-21"],["Boston College","Miami","2026-11-28"],["Duke","Wake Forest","2026-11-28"],["SMU","Stanford","2026-11-28"],["NC State","North Carolina","2026-11-28"],["Pittsburgh","California","2026-11-28"],["Virginia","Virginia Tech","2026-11-28"]],"done":[["NC State","Virginia",8,34,"2026-08-29"],["Miami","Stanford",45,6,"2026-09-05"],["SMU","Florida State",27,24,"2026-09-07"],["California","Syracuse",21,18,"2026-09-12"],["Syracuse","Pittsburgh",13,27,"2026-09-17"],["Miami","Wake Forest",33,20,"2026-09-18"],["SMU","Louisville",31,41,"2026-09-19"],["North Carolina","Clemson",20,28,"2026-09-19"],["Stanford","Duke",7,35,"2026-09-19"],["Clemson","California",24,10,"2026-09-26"],["Wake Forest","Louisville",30,27,"2026-09-26"],["Virginia Tech","Boston College",21,14,"2026-09-26"],["Georgia Tech","Stanford",27,34,"2026-09-27"],["Pittsburgh","Virginia Tech",35,33,"2026-10-02"],["Miami","Clemson",41,13,"2026-10-03"],["Boston College","SMU",16,25,"2026-10-03"],["Stanford","Wake Forest",3,57,"2026-10-03"],["Louisville","NC State",28,31,"2026-10-03"],["Virginia","Florida State",7,38,"2026-10-03"],["Florida State","Louisville",20,44,"2026-10-09"],["North Carolina","Pittsburgh",21,17,"2026-10-10"],["Wake Forest","NC State",38,14,"2026-10-10"],["Duke","Georgia Tech",25,28,"2026-10-10"],["Virginia Tech","California",20,25,"2026-10-10"],["Syracuse","Virginia",25,28,"2026-10-10"],["Florida State","Miami",35,43,"2026-10-17"],["Virginia","SMU",13,23,"2026-10-17"],["Pittsburgh","Boston College",21,27,"2026-10-17"],["Georgia Tech","Virginia Tech",24,34,"2026-10-17"],["North Carolina","Duke",24,20,"2026-10-17"],["Louisville","Syracuse",34,26,"2026-10-17"],["Wake Forest","California",41,7,"2026-10-18"],["Duke","Virginia",19,16,"2026-10-23"],["NC State","Stanford",28,31,"2026-10-24"],["Pittsburgh","Miami",23,52,"2026-10-24"],["California","SMU",20,59,"2026-10-24"],["Boston College","Georgia Tech",49,27,"2026-10-24"],["Virginia Tech","Clemson",20,16,"2026-10-24"],["Syracuse","North Carolina",31,30,"2026-10-24"]],"allg":[["2628","153",10,15],["258","152",34,8],["24","62",37,27],["52","166",34,17],["154","2006",38,16],["59","38",13,14],["24","2390",6,45],["99","228",51,10],["183","160",66,3],["221","193",59,14],["2132","103",34,15],["150","2655",17,3],["259","2678",73,3],["25","26",24,45],["145","97",41,38],["52","2567",24,27],["2390","50",77,7],["97","222",59,13],["258","2450",59,3],["152","257",73,0],["103","164",28,21],["2567","302",56,10],["59","2633",24,45],["153","2193",35,3],["259","295",44,21],["2509","154",36,38],["221","2116",12,7],["183","25",18,21],["356","150",27,31],["228","290",22,7],["221","183",27,13],["154","2390",20,33],["333","52",50,36],["97","2567",41,31],["258","277",27,38],["59","2382",44,11],["228","153",28,20],["238","152",35,31],["103","311",22,16],["25","2681",49,7],["150","24",35,7],["120","259",26,35],["25","228",10,24],["2390","2117",52,3],["97","154",27,30],["2567","2623",34,24],["221","2083",59,0],["103","259",14,21],["52","2110",34,7],["150","2729",62,7],["258","48",42,3],["152","2026",41,31],["24","59",34,27],["259","221",33,35],["153","87",26,37],["228","2390",13,41],["2567","103",25,16],["154","24",57,3],["41","183",41,42],["2439","25",39,31],["152","97",31,28],["52","258",38,7],["97","52",44,20],["87","24",58,7],["221","153",17,21],["152","154",14,38],["59","150",28,25],["25","259",25,20],["258","183",28,25],["2390","52",43,35],["25","154",7,41],["2567","258",23,13],["228","2127",37,0],["103","221",27,21],["259","59",34,24],["150","153",20,24],["24","2210",34,7],["183","97",26,34],["258","150",16,19],["24","152",31,28],["2390","221",52,23],["2567","25",59,20],["59","103",27,49],["228","259",16,20],["153","183",30,31]],"fpi":{"Virginia":6.2,"NC State":0.0,"Stanford":-10.0,"Miami":27.5,"Florida State":10.1,"SMU":12.5,"Syracuse":1.6,"California":-6.0,"Pittsburgh":8.6,"Wake Forest":15.1,"Louisville":13.7,"Clemson":5.8,"North Carolina":7.4,"Duke":7.6,"Boston College":0.2,"Virginia Tech":6.6,"Georgia Tech":-2.5},"live":false},"Big 12":{"teams":["Arizona","Arizona State","BYU","Baylor","Cincinnati","Colorado","Houston","Iowa State","Kansas","Kansas State","Oklahoma State","TCU","Texas Tech","UCF","Utah","West Virginia"],"rec":{"BYU":[3,1,6,1],"Arizona":[3,1,6,1],"Texas Tech":[3,1,6,1],"Houston":[3,2,6,2],"Kansas":[1,3,3,4],"Arizona State":[2,2,4,3],"Iowa State":[1,3,3,4],"Utah":[4,0,7,0],"Baylor":[2,2,4,3],"Colorado":[0,4,2,5],"UCF":[2,2,4,3],"TCU":[1,3,3,4],"Cincinnati":[2,2,5,2],"Kansas State":[1,3,4,3],"West Virginia":[2,3,5,3],"Oklahoma State":[3,1,5,2]},"rem":[["Baylor","UCF","2026-10-30"],["Arizona","Texas Tech","2026-10-31"],["Kansas State","Colorado","2026-10-31"],["Arizona State","BYU","2026-10-31"],["Kansas","TCU","2026-10-31"],["Utah","Cincinnati","2026-10-31"],["Oklahoma State","Iowa State","2026-10-31"],["TCU","Arizona","2026-11-07"],["West Virginia","Texas Tech","2026-11-07"],["Cincinnati","Houston","2026-11-07"],["Oklahoma State","Kansas State","2026-11-07"],["UCF","Kansas","2026-11-07"],["Iowa State","Baylor","2026-11-07"],["BYU","Utah","2026-11-07"],["Colorado","Arizona State","2026-11-08"],["Houston","Colorado","2026-11-14"],["Utah","Arizona","2026-11-14"],["Baylor","BYU","2026-11-14"],["Texas Tech","Oklahoma State","2026-11-14"],["Arizona State","UCF","2026-11-14"],["Cincinnati","Iowa State","2026-11-14"],["Kansas","West Virginia","2026-11-14"],["Kansas State","TCU","2026-11-14"],["Iowa State","UCF","2026-11-20"],["Utah","TCU","2026-11-21"],["BYU","Kansas","2026-11-21"],["Texas Tech","Baylor","2026-11-21"],["Houston","West Virginia","2026-11-21"],["Arizona","Kansas State","2026-11-21"],["Oklahoma State","Arizona State","2026-11-21"],["Colorado","Cincinnati","2026-11-21"],["TCU","Texas Tech","2026-11-27"],["West Virginia","Utah","2026-11-28"],["Cincinnati","BYU","2026-11-28"],["Baylor","Houston","2026-11-28"],["Arizona State","Arizona","2026-11-28"],["Kansas","Oklahoma State","2026-11-28"],["UCF","Colorado","2026-11-28"],["Kansas State","Iowa State","2026-11-28"]],"done":[["Arizona","BYU",17,28,"2026-09-12"],["Houston","Texas Tech",26,28,"2026-09-19"],["Arizona State","Kansas",24,17,"2026-09-19"],["Utah","Iowa State",31,17,"2026-09-26"],["Colorado","Baylor",13,23,"2026-09-26"],["TCU","UCF",13,21,"2026-09-26"],["Kansas State","Cincinnati",26,31,"2026-09-26"],["Oklahoma State","West Virginia",41,24,"2026-09-26"],["BYU","TCU",17,10,"2026-10-03"],["Texas Tech","Colorado",29,7,"2026-10-03"],["UCF","Houston",17,27,"2026-10-03"],["West Virginia","Iowa State",42,45,"2026-10-03"],["Baylor","Arizona State",55,19,"2026-10-04"],["Cincinnati","Arizona",7,34,"2026-10-04"],["Iowa State","BYU",10,24,"2026-10-10"],["UCF","Oklahoma State",28,42,"2026-10-10"],["Houston","Kansas State",35,16,"2026-10-10"],["Arizona","West Virginia",52,31,"2026-10-10"],["Kansas","Utah",24,41,"2026-10-11"],["Arizona State","Texas Tech",25,53,"2026-10-17"],["Oklahoma State","Houston",32,35,"2026-10-17"],["Cincinnati","West Virginia",42,45,"2026-10-17"],["Kansas","Kansas State",24,35,"2026-10-17"],["TCU","Baylor",17,6,"2026-10-17"],["Utah","Colorado",27,24,"2026-10-18"],["BYU","UCF",31,39,"2026-10-24"],["Texas Tech","Cincinnati",24,37,"2026-10-24"],["Iowa State","Arizona",3,39,"2026-10-24"],["West Virginia","TCU",24,20,"2026-10-24"],["Baylor","Kansas",24,25,"2026-10-24"],["Kansas State","Arizona State",17,28,"2026-10-24"],["Colorado","Oklahoma State",24,57,"2026-10-24"],["Houston","Utah",13,21,"2026-10-25"]],"allg":[["2628","153",10,15],["254","70",66,14],["2116","2065",73,6],["59","38",13,14],["2305","2341",51,6],["2641","2000",33,10],["252","3101",63,7],["248","204",33,20],["277","324",31,24],["66","2546",38,10],["2","239",17,16],["2132","103",34,15],["202","197",24,10],["2306","2447",71,3],["12","2464",35,7],["9","2415",70,7],["2305","142",21,38],["197","2483",39,31],["245","9",48,20],["204","2641",24,35],["252","12",28,17],["254","8",43,10],["2294","66",16,13],["248","2582",77,6],["2306","265",34,7],["277","2630",52,7],["38","2692",52,21],["221","2116",12,7],["2132","2717",62,10],["2628","2755",63,7],["239","2504",44,3],["2641","248",28,26],["36","252",23,41],["254","328",33,0],["258","277",27,38],["2306","2655",31,20],["66","189",55,7],["2305","9",17,24],["2132","193",35,31],["239","2348",36,19],["2116","2247",44,30],["197","93",59,0],["77","38",41,7],["2628","2032",31,7],["12","2459",42,17],["2641","2534",49,14],["66","254",17,31],["290","248",28,42],["239","38",23,13],["2116","2628",21,13],["2132","2306",31,26],["277","197",24,41],["265","12",24,34],["2628","252",10,17],["38","2641",7,29],["248","2116",27,17],["2305","2393",55,0],["66","277",45,42],["9","239",19,55],["12","2132",34,7],["252","66",24,10],["254","2305",41,24],["197","2116",42,28],["2306","248",16,35],["277","12",31,52],["9","62",30,12],["252","87",28,24],["2641","9",53,25],["38","254",24,27],["248","197",35,32],["277","2132",45,42],["2306","2305",35,24],["239","2628",6,17],["2116","252",39,31],["2132","2641",37,24],["254","248",21,13],["12","66",39,3],["2628","277",20,24],["2305","239",25,24],["9","2306",28,17],["197","38",57,24]],"fpi":{"BYU":16.3,"Arizona":13.3,"Texas Tech":16.5,"Houston":14.4,"Kansas":4.3,"Arizona State":0.6,"Iowa State":1.5,"Utah":17.0,"Baylor":9.1,"Colorado":-2.0,"UCF":6.6,"TCU":7.3,"Cincinnati":6.5,"Kansas State":5.7,"West Virginia":1.9,"Oklahoma State":11.2},"live":false}};
+const AP=[[1,"Miami"],[2,"Ohio State"],[3,"Georgia"],[4,"Indiana"],[5,"Notre Dame"],[6,"Utah"],[7,"UCLA"],[8,"BYU"],[9,"Kentucky"],[10,"Alabama"],[11,"Texas"],[12,"Ole Miss"],[13,"Texas Tech"],[14,"Wake Forest"],[15,"LSU"],[16,"Tennessee"],[17,"Florida"],[18,"Houston"],[19,"SMU"],[20,"Boise State"],[20,"Northwestern"],[22,"Arizona"],[23,"Missouri"],[24,"Oklahoma State"],[25,"Wisconsin"]];
+const G6TEAMS=["Air Force","Akron","App State","Arkansas State","Army","Ball State","Boise State","Bowling Green","Buffalo","Central Michigan","Charlotte","Coastal Carolina","Colorado State","Delaware","East Carolina","Eastern Michigan","Florida Atlantic","Florida International","Fresno State","Georgia Southern","Georgia State","Hawai'i","Jacksonville State","James Madison","Kennesaw State","Kent State","Liberty","Louisiana","Louisiana Tech","Marshall","Massachusetts","Memphis","Miami (OH)","Middle Tennessee","Missouri State","Navy","Nevada","New Mexico","New Mexico State","North Dakota State","North Texas","Northern Illinois","Ohio","Old Dominion","Oregon State","Rice","Sacramento State","Sam Houston","San Diego State","San Jos\u00e9 State","South Alabama","South Florida","Southern Miss","TBD","Temple","Texas State","Toledo","Troy","Tulane","Tulsa","UAB","UL Monroe","UNLV","UTEP","UTSA","Utah State","Washington State","Western Kentucky","Western Michigan","Wyoming"];
+const FPI_ALL={"Ohio State":28.2,"Notre Dame":27.7,"Miami":27.5,"Georgia":26.4,"Alabama":24.5,"LSU":24.0,"Texas":24.0,"Indiana":24.0,"Ole Miss":18.9,"Utah":17.0,"Oregon":17.0,"Tennessee":16.8,"Nebraska":16.7,"Texas Tech":16.5,"BYU":16.3,"Wake Forest":15.1,"Florida":14.5,"Houston":14.4,"Oklahoma":14.1,"Northwestern":13.8,"Louisville":13.7,"Texas A&M":13.5,"Arizona":13.3,"Kentucky":13.1,"USC":12.7,"SMU":12.5,"South Carolina":12.4,"Missouri":12.2,"Auburn":12.1,"Penn State":11.9,"UCLA":11.7,"Boise State":11.3,"Oklahoma State":11.2,"Michigan":11.1,"Iowa":11.1,"Wisconsin":10.7,"Florida State":10.1,"Baylor":9.1,"Pittsburgh":8.6,"Mississippi State":8.5,"New Mexico":7.9,"Duke":7.6,"North Carolina":7.4,"TCU":7.3,"UCF":6.6,"Virginia Tech":6.6,"Cincinnati":6.5,"Illinois":6.4,"Virginia":6.2,"Oregon State":6.1,"Clemson":5.8,"Kansas State":5.7,"James Madison":5.3,"Washington":4.5,"Kansas":4.3,"North Texas":2.7,"Liberty":2.5,"Purdue":2.2,"Arkansas":2.0,"Memphis":1.9,"West Virginia":1.9,"Syracuse":1.6,"Iowa State":1.5,"Michigan State":1.2,"Minnesota":0.7,"Arizona State":0.6,"UTSA":0.5,"Vanderbilt":0.4,"Boston College":0.2,"NC State":0.0,"North Dakota State":-0.2,"Texas State":-0.3,"Army":-0.3,"Fresno State":-1.0,"Colorado":-2.0,"South Florida":-2.1,"Louisiana Tech":-2.3,"UNLV":-2.5,"Toledo":-2.5,"Georgia Tech":-2.5,"Western Michigan":-3.1,"Louisiana":-3.4,"Maryland":-3.9,"Tulsa":-3.9,"Tulane":-4.0,"East Carolina":-4.2,"Rutgers":-4.4,"Air Force":-4.8,"Georgia Southern":-4.9,"California":-6.0,"Navy":-6.3,"Utah State":-7.1,"App State":-7.5,"Georgia State":-7.5,"Nevada":-7.6,"Ohio":-7.9,"Arkansas State":-8.7,"South Alabama":-8.8,"Jacksonville State":-8.8,"Delaware":-9.1,"Washington State":-9.1,"Temple":-9.1,"Hawai'i":-9.4,"Miami (OH)":-9.6,"San Diego State":-9.7,"Stanford":-10.0,"Colorado State":-10.9,"Florida Atlantic":-10.9,"Florida International":-11.0,"Troy":-11.4,"Coastal Carolina":-11.9,"Buffalo":-12.9,"New Mexico State":-13.1,"Wyoming":-13.2,"San Jos\u00e9 State":-13.3,"Western Kentucky":-13.4,"Southern Miss":-13.6,"UAB":-13.7,"Kennesaw State":-13.9,"Central Michigan":-14.3,"Rice":-14.6,"Marshall":-14.7,"Missouri State":-15.0,"Massachusetts":-15.0,"Old Dominion":-15.3,"Middle Tennessee":-15.8,"Eastern Michigan":-16.3,"Bowling Green":-17.9,"Sam Houston":-19.5,"Ball State":-20.1,"Kent State":-21.0,"Charlotte":-22.0,"Northern Illinois":-22.8,"Akron":-23.2,"UTEP":-24.2,"UL Monroe":-25.3,"Sacramento State":-33.2};
+const ID2N={"87":"Notre Dame","349":"Army","58":"South Florida","2226":"Florida Atlantic","2426":"Navy","218":"Temple","5":"UAB","202":"Tulsa","249":"North Texas","2429":"Charlotte","235":"Memphis","242":"Rice","2636":"UTSA","2655":"Tulane","151":"East Carolina","2393":"Middle Tennessee","338":"Kennesaw State","166":"New Mexico State","55":"Jacksonville State","98":"Western Kentucky","48":"Delaware","2335":"Liberty","2229":"Florida International","2534":"Sam Houston","2623":"Missouri State","2199":"Eastern Michigan","16":"Sacramento State","2309":"Kent State","2050":"Ball State","113":"Massachusetts","2084":"Buffalo","2711":"Western Michigan","2649":"Toledo","2117":"Central Michigan","2006":"Akron","195":"Ohio","193":"Miami (OH)","189":"Bowling Green","62":"Hawai'i","2439":"UNLV","2005":"Air Force","2449":"North Dakota State","2751":"Wyoming","2440":"Nevada","167":"New Mexico","2638":"UTEP","23":"San Jos\u00e9 State","2459":"Northern Illinois","295":"Old Dominion","256":"James Madison","2247":"Georgia State","276":"Marshall","324":"Coastal Carolina","290":"Georgia Southern","6":"South Alabama","2433":"UL Monroe","309":"Louisiana","2032":"Arkansas State","2653":"Troy","2572":"Southern Miss","2026":"App State","2348":"Louisiana Tech","68":"Boise State","328":"Utah State","36":"Colorado State","204":"Oregon State","265":"Washington State","278":"Fresno State","21":"San Diego State","326":"Texas State","-2":"TBD","96":"Kentucky","333":"Alabama","8":"Arkansas","61":"Georgia","145":"Ole Miss","99":"LSU","245":"Texas A&M","2579":"South Carolina","344":"Mississippi State","2":"Auburn","57":"Florida","2633":"Tennessee","251":"Texas","201":"Oklahoma","142":"Missouri","238":"Vanderbilt","164":"Rutgers","30":"USC","26":"UCLA","2509":"Purdue","84":"Indiana","77":"Northwestern","194":"Ohio State","356":"Illinois","2483":"Oregon","213":"Penn State","275":"Wisconsin","130":"Michigan","2294":"Iowa","120":"Maryland","127":"Michigan State","158":"Nebraska","264":"Washington","135":"Minnesota","258":"Virginia","152":"NC State","24":"Stanford","2390":"Miami","52":"Florida State","2567":"SMU","183":"Syracuse","25":"California","221":"Pittsburgh","154":"Wake Forest","97":"Louisville","228":"Clemson","153":"North Carolina","150":"Duke","103":"Boston College","259":"Virginia Tech","59":"Georgia Tech","252":"BYU","12":"Arizona","2641":"Texas Tech","248":"Houston","2305":"Kansas","9":"Arizona State","66":"Iowa State","254":"Utah","239":"Baylor","38":"Colorado","2116":"UCF","2628":"TCU","2132":"Cincinnati","2306":"Kansas State","277":"West Virginia","197":"Oklahoma State"};
+const SNAPDATE="Oct 28, 2026";
+const CONFS=["SEC","Big Ten","ACC","Big 12"];
+// ---------- generic conference engine ----------
+const $=id=>document.getElementById(id);
+const STEPS={
+ "Big 12":{steps:["h2h","common","walkdown","sos","totalwins"],tail:"the SportSource Analytics rating, then a coin toss",src:"https://big12sports.com/documents/2025/10/21//25-26_Championship_Tiebreaker.pdf"},
+ "Big Ten":{steps:["h2h","common","walkdown","sos"],tail:"the SportSource Analytics rating, then a random draw",src:"https://bigten.org/fb/article/blt6104802d94ebe1ab/"},
+ "SEC":{steps:["h2h","common","walkdown","sos","margin"],tail:"a random draw",src:"https://www.secsports.com/formats"},
+ "ACC":{steps:["h2h"],tail:"the SportSource Analytics Team Success Ranking, then a draw",src:"https://theacc.com/documents/2026/7/15/ACC_Football_Tiebreaker_Policy_Jully_2026.pdf"}};
+function buildCtx(res,teams){const g={};teams.forEach(t=>g[t]=[]);res.forEach(r=>{g[r[0]].push({opp:r[1],won:1});g[r[1]].push({opp:r[0],won:0})});return g}
+function wpVs(g,t,opps){const gs=g[t].filter(x=>opps.indexOf(x.opp)>=0);if(!gs.length)return null;return gs.reduce((s,x)=>s+x.won,0)/gs.length}
+function narrow(cand,vals){let best=-2,out=[],any=false;cand.forEach(t=>{const v=vals[t];if(v==null)return;any=true;if(v>best+1e-9){best=v;out=[t]}else if(Math.abs(v-best)<=1e-9)out.push(t)});return any?out:cand}
+function secMargins(sd){
+ const scored={},allowed={},gp={},mg={};
+ sd.teams.forEach(t=>{scored[t]=0;allowed[t]=0;gp[t]=0;mg[t]=0});
+ sd.done.forEach(g=>{const a=g[0],h=g[1],as=g[2],hs=g[3];scored[h]+=hs;allowed[h]+=as;scored[a]+=as;allowed[a]+=hs;gp[h]++;gp[a]++});
+ const avgS=t=>gp[t]?scored[t]/gp[t]:0,avgA=t=>gp[t]?allowed[t]/gp[t]:0;
+ sd.done.forEach(g=>{
+  const add=(t,s,os)=>{const o=sd.teams.filter(x=>x!=t&&((g[0]==t&&g[1]==x)||(g[1]==t&&g[0]==x)))[0];if(!o)return;
+   const oA=avgA(o),oS=avgS(o);
+   const off=oA?Math.min(200,s/oA*100):0;
+   const def=oS?os/oS*100:0;
+   mg[t]+=off-def};
+  add(g[0],g[2],g[3]);add(g[1],g[3],g[2])});
+ sd.teams.forEach(t=>{if(gp[t])mg[t]/=gp[t]});
+ return mg}
+function recStr(g,t,opps){const gs=g[t].filter(x=>opps.indexOf(x.opp)>=0);return gs.reduce((s,x)=>s+x.won,0)+"-"+(gs.length-gs.reduce((s,x)=>s+x.won,0))}
+function seedOneX(pool,g,fin,cf){
+ const teams=DATA[cf].teams,steps=STEPS[cf].steps;
+ let cand=pool.slice();
+ if(steps.indexOf("h2h")>=0){
+  if(cand.length==2){
+   const a=cand[0],b=cand[1],pa=wpVs(g,a,[b]),pb=wpVs(g,b,[a]);
+   if(pa!=null&&pb!=null&&Math.abs(pa-pb)>1e-9){
+    const w=pa>pb?a:b;
+    const dg=(window.__done||DATA[cf].done).find(x=>(x[0]==a&&x[1]==b)||(x[0]==b&&x[1]==a));
+    return{winner:w,mkReason:n=>{let s=`Head-to-head: ${w} beat ${n}`;if(dg&&dg[2]!=null){const ws=dg[0]==w?dg[2]:dg[3],ls=dg[0]==w?dg[3]:dg[2];s+=` ${ws}-${ls}`}return s}}}
+  }else{
+   const playedAll=cand.every(t=>cand.every(o=>o==t||g[t].some(x=>x.opp==o)));
+   if(playedAll){
+    const v={};cand.forEach(t=>v[t]=wpVs(g,t,cand.filter(o=>o!=t)));cand=narrow(cand,v);
+    if(cand.length==1){const w=cand[0],rest=pool.filter(t=>t!=w);return{winner:w,mkReason:n=>`Record vs the tied teams: ${w} ${recStr(g,w,rest)}, ${n} ${recStr(g,n,pool.filter(t=>t!=n))}`}}
+   }else{
+    const sweep=cand.find(t=>cand.every(o=>o==t||(g[t].some(x=>x.opp==o)&&g[t].filter(x=>x.opp==o).every(x=>x.won))));
+    if(sweep)return{winner:sweep,mkReason:n=>`${sweep} beat every other team in the tie`}
+   }
+  }
+ }
+ for(const st of steps){
+  if(st=="h2h"||cand.length<2)continue;
+  if(st=="common"){
+   const common=teams.filter(o=>cand.indexOf(o)<0&&cand.every(t=>g[t].some(x=>x.opp==o)));if(!common.length)continue;
+   const v={};cand.forEach(t=>v[t]=wpVs(g,t,common));const n2=narrow(cand,v);
+   if(n2.length==1){const w=n2[0];return{winner:w,mkReason:n=>`Record vs common conference opponents (${common.join(", ")}): ${w} ${recStr(g,w,common)}, ${n} ${recStr(g,n,common)}`}}
+   cand=n2;
+  }else if(st=="walkdown"){
+   const pct=t=>fin[t][0]/(fin[t][0]+fin[t][1]);
+   const order=teams.slice().sort((x,y)=>pct(y)-pct(x));const groups=[];order.forEach(t=>{const gp=groups.find(gr=>Math.abs(pct(gr[0])-pct(t))<1e-9);if(gp)gp.push(t);else groups.push([t])});
+   let resolved=null;
+   for(const grp of groups){
+    const opps=grp.filter(t=>cand.indexOf(t)<0);if(!opps.length)continue;
+    if(!cand.every(t=>g[t].some(x=>opps.indexOf(x.opp)>=0)))continue;
+    const v={};cand.forEach(t=>v[t]=wpVs(g,t,opps));const n2=narrow(cand,v);
+    if(n2.length<cand.length){if(n2.length==1){const w=n2[0],lbl=opps.join(" + ");resolved={winner:w,mkReason:n=>`Record vs the highest-placed common opponent (${lbl}): ${w} ${recStr(g,w,opps)}, ${n} ${recStr(g,n,opps)}`}}cand=n2;break}
+   }
+   if(resolved)return resolved;
+  }else if(st=="sos"){
+   const v={};cand.forEach(t=>{let w2=0,n=0;g[t].forEach(x=>{w2+=fin[x.opp][0];n+=fin[x.opp][0]+fin[x.opp][1]});v[t]=n?w2/n:null});
+   const n2=narrow(cand,v);
+   if(n2.length==1){const w=n2[0];const f=t=>(v[t]*100).toFixed(0)+"%";return{winner:w,mkReason:n=>`Strength of conference schedule: ${w} ${f(w)} vs ${n} ${f(n)}`}}
+   cand=n2;
+  }else if(st=="totalwins"){
+   const v={};cand.forEach(t=>v[t]=fin[t][2]);const n2=narrow(cand,v);
+   if(n2.length==1){const w=n2[0];return{winner:w,mkReason:n=>`Total wins this season: ${w} ${fin[w][2]}, ${n} ${fin[n][2]}`}}
+   cand=n2;
+  }else if(st=="margin"){
+   if(!DATA[cf].margin)DATA[cf].margin=secMargins(DATA[cf]);
+   const mg=DATA[cf].margin,v={};cand.forEach(t=>v[t]=mg[t]);const n2=narrow(cand,v);
+   if(n2.length==1){const w=n2[0];const f=t=>(mg[t]>=0?"+":"")+mg[t].toFixed(1)+"%";return{winner:w,mkReason:n=>`Capped relative scoring margin (played conference games): ${w} ${f(w)} vs ${n} ${f(n)}`}}
+   cand=n2;
+  }
+ }
+ if(cand.length==1)return{winner:cand[0],mkReason:null};
+ const w=cand[Math.random()*cand.length|0];
+ return{winner:w,prov:true,mkReason:n=>`No on-field separation - under the official ${cf} procedure this would fall to ${STEPS[cf].tail}, which this app cannot compute. PROVISIONAL (resolved randomly here; swap it below if you disagree)`}}
+function rankTied(group,g,fin,cf){const out=[],p=group.slice();while(p.length>1){const r=seedOneX(p,g,fin,cf);out.push(r);p.splice(p.indexOf(r.winner),1)}out.push({winner:p[0],mkReason:null});return out}
+function confGroups(rec,cf){const pct=t=>rec[t][0]/(rec[t][0]+rec[t][1]||1);const groups=[];DATA[cf].teams.slice().sort((x,y)=>pct(y)-pct(x)||rec[x][1]-rec[y][1]).forEach(t=>{const gr=groups.find(gr=>Math.abs(pct(gr[0])-pct(t))<1e-9);if(gr)gr.push(t);else groups.push([t])});return groups}
+function fullOrder(rec,g,fin,cf,prov){
+ const out=[];
+ confGroups(rec,cf).forEach(gr=>{
+  if(gr.length<2){out.push(gr[0]);return}
+  const key=gr.slice().sort().join("|"),ov=(CST[cf]&&CST[cf].ord)||null;
+  if(ov&&ov[key]&&ov[key].length==gr.length&&ov[key].every(t=>gr.indexOf(t)>=0)){
+   ov[key].forEach(t=>out.push(t));
+   if(prov)prov.push({ia:out.length-ov[key].length,a:ov[key][0],b:ov[key][1],group:gr,overridden:true});
+   return}
+  const ranked=rankTied(gr,g,fin,cf);
+  ranked.forEach((o,i)=>{out.push(o.winner);if(prov&&o.prov&&i+1<ranked.length)prov.push({ia:out.length-1,a:o.winner,b:ranked[i+1].winner,group:gr,overridden:false})});
+ });
+ return out}
+function provChamp(cf){
+ const{rec,res}=scenRec(cf),prov=[];
+ fullOrder(rec,buildCtx(res,DATA[cf].teams),rec,cf,prov);
+ return prov.some(p=>p.ia<=2&&!p.overridden)}
+function tbHTML(rec,g,fin,cf){
+ let html="";
+ confGroups(rec,cf).forEach((gr,i0)=>{
+  if(gr.length<2)return;
+  const order=rankTied(gr,g,fin,cf),lbl=`${rec[gr[0]][0]}-${rec[gr[0]][1]}`;
+  html+=`<h4 style="margin:12px 0 4px">Tied at ${lbl}</h4>`;
+  order.forEach((o,i)=>{html+=`<div class="tgrow">${o.winner}</div>`;
+   if(o.mkReason)html+=`<div class="tgreason">${o.winner} above ${order[i+1].winner}: ${o.mkReason(order[i+1].winner)}</div>`})});
+ if(!html)return "";
+ const hasProv=html.indexOf("PROVISIONAL")>=0;
+ return `<div class="tbcard"><h3>${cf} tiebreakers in this scenario</h3><div class="sub2">Official ${cf} procedure (<a href="${STEPS[cf].src}" target="_blank" rel="noopener">source</a>). Steps that aren't computable on-field (${STEPS[cf].tail}) are marked <b style="color:#ffb347">PROVISIONAL</b> and resolve randomly - use the swap buttons in the standings to override them. Informational - nothing is locked until the regular season ends.</div>${html}${hasProv?'<div class="provv">This table contains provisional tie resolutions - not official standings.</div>':""}</div>`}
+
+// ---------- scenario state per conference ----------
+const CST={}; // cf -> {picks:{}}
+const MN=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function fmtD(d){if(!d)return"";const p=d.split("-");return MN[+p[1]-1]+" "+(+p[2])}
+function allGames(cf){const sd=DATA[cf];return sd.done.map((g,i)=>({id:"d"+i,a:g[0],h:g[1],as:g[2],hs:g[3],date:g[4]||"",played:true})).concat(sd.rem.map((g,i)=>({id:"r"+i,a:g[0],h:g[1],date:g[2]||"",played:false})))}
+function computeElo(games,teams){
+ const E={},nm=id=>ID2N[id]||id;
+ games.forEach(g=>{const H=nm(g[0]),A=nm(g[1]);if(E[H]==null)E[H]=1500;if(E[A]==null)E[A]=1500;
+  const p=1/(1+Math.pow(10,-(E[H]-E[A]+65)/400)),s=g[2]>g[3]?1:0,K=25;
+  E[H]+=K*(s-p);E[A]-=K*(s-p)});
+ teams.forEach(t=>{if(E[t]==null)E[t]=1500});return E}
+function winProb(cf,m,h,a){
+ if(m=="flip")return .5;
+ if(m=="fpi"){const d=((DATA[cf].fpi[h]||0)-(DATA[cf].fpi[a]||0))+2.5;return 1/(1+Math.exp(-d/12))}
+ if(!DATA[cf].elo)DATA[cf].elo=computeElo(DATA[cf].allg,DATA[cf].teams);
+ return 1/(1+Math.pow(10,-((DATA[cf].elo[h]-DATA[cf].elo[a])+65)/400))}
+function scenRec(cf){
+ const sd=DATA[cf],picks=CST[cf].picks,win={};
+ allGames(cf).forEach(gm=>{if(gm.played)win[gm.id]=picks[gm.id]||(gm.hs>gm.as?gm.h:gm.a);else if(picks[gm.id])win[gm.id]=picks[gm.id]});
+ const rec={};sd.teams.forEach(t=>rec[t]=[0,0,0,0]);const res=[];
+ allGames(cf).forEach(gm=>{const w=win[gm.id];if(!w)return;const l=w==gm.h?gm.a:gm.h;rec[w][0]++;rec[l][1]++;res.push([w,l])});
+ sd.teams.forEach(t=>{rec[t][2]=sd.rec[t][2]-sd.rec[t][0]+rec[t][0];rec[t][3]=sd.rec[t][3]-sd.rec[t][1]+rec[t][1]});
+ return{rec,res}}
+function renderConf(cf){
+ const sd=DATA[cf],picks=CST[cf].picks;
+ const{rec,res}=scenRec(cf);
+ const g=buildCtx(res,sd.teams),fin=rec;
+ const win={};allGames(cf).forEach(gm=>{if(gm.played)win[gm.id]=picks[gm.id]||(gm.hs>gm.as?gm.h:gm.a);else if(picks[gm.id])win[gm.id]=picks[gm.id]});
+ let html="",last="";
+ allGames(cf).forEach(gm=>{
+  if(gm.date!=last){html+=`<div class="gdate">${fmtD(gm.date)}${gm.played?"":" &middot; upcoming"}</div>`;last=gm.date}
+  const w=win[gm.id],sc=gm.played?` <span class="sc">${gm.as}-${gm.hs}</span>`:"";
+  html+=`<div class="gline"><span class="gw${w==gm.a?" sel":""}" data-c="${cf}" data-g="${gm.id}" data-t="${gm.a}">${gm.a}</span> at <span class="gw${w==gm.h?" sel":""}" data-c="${cf}" data-g="${gm.id}" data-t="${gm.h}">${gm.h}</span>${sc}</div>`});
+ $("games-"+cf).innerHTML=html;
+ document.querySelectorAll(`#games-${CSS.escape(cf)} .gw`).forEach(el=>{el.onclick=()=>{
+  const id=el.dataset.g,t=el.dataset.t,gm=allGames(cf).find(x=>x.id==id);
+  if(gm.played){const actual=gm.hs>gm.as?gm.h:gm.a,cur=picks[id]||actual;
+   if(t==cur){if(t!=actual)delete picks[id]}else picks[id]=t;
+  }else{if(picks[id]==t)delete picks[id];else picks[id]=t}
+  save();renderConf(cf);renderPlayoff()}});
+ const prov=[],order=fullOrder(rec,g,fin,cf,prov),provByIdx={},provTeams={};
+ prov.forEach(p=>{provByIdx[p.ia]=p;p.group.forEach(t=>provTeams[t]=1)});
+ const unpicked=allGames(cf).filter(gm=>!gm.played&&!win[gm.id]).length;
+ let rows="";
+ order.forEach((t,i)=>{
+  rows+=`<tr${provTeams[t]?' class="provrow"':""}><td>${i+1}</td><td>${t}${provTeams[t]?'<span class="pbadge">prov</span>':""}</td><td>${rec[t][0]}-${rec[t][1]}</td><td>${rec[t][2]}-${rec[t][3]}</td></tr>`;
+  const p=provByIdx[i];
+  if(p)rows+=`<tr><td colspan="4"><button class="sw" data-cf="${cf}" data-i="${i}">${p.overridden?`Manual tie override active (${p.group.join(" / ")}) - tap to return to the official procedure`:`PROVISIONAL tie: ${p.a} over ${p.b} chosen randomly (officially falls to ${STEPS[cf].tail}) - tap to swap`}</button></td></tr>`});
+ $("stand-"+cf).innerHTML=`<h2 class="s">Scenario standings${unpicked?` <small style="color:var(--mut);font-size:13px">(${unpicked} remaining game${unpicked==1?"":"s"} unpicked)</small>`:""}</h2><table><tr><th>#</th><th>Team</th><th>Conf</th><th>Overall</th></tr>${rows}</table>${prov.length?'<div class="provv">Provisional = tie not settled by any on-field step. Not an official order - override it with the swap buttons.</div>':""}`;
+ document.querySelectorAll(`#stand-${CSS.escape(cf)} .sw`).forEach(el=>{el.onclick=()=>{
+  const i=+el.dataset.i,prov2=[],ord2=fullOrder(rec,buildCtx(res,sd.teams),rec,cf,prov2),p2=prov2.find(x=>x.ia==i);
+  if(!p2)return;
+  const key=p2.group.slice().sort().join("|");
+  CST[cf].ord=CST[cf].ord||{};
+  if(p2.overridden)delete CST[cf].ord[key];
+  else{const go=ord2.filter(t=>p2.group.indexOf(t)>=0);const ia=go.indexOf(p2.a),ib=go.indexOf(p2.b);go[ia]=p2.b;go[ib]=p2.a;CST[cf].ord[key]=go}
+  save();renderConf(cf);renderPlayoff()}});
+ // championship projection
+ const top2=order.slice(0,2);
+ if(top2.length==2){
+  const cur=champPick(cf,top2);
+  $("champ-"+cf).innerHTML=`<h2 class="s">Projected ${cf} championship</h2><div class="gline" style="font-size:16px"><span class="gw${cur==top2[0]?" sel":""}" data-champ="${cf}" data-t="${top2[0]}">${top2[0]}</span> vs <span class="gw${cur==top2[1]?" sel":""}" data-champ="${cf}" data-t="${top2[1]}">${top2[1]}</span></div><div class="sub2" style="margin-top:4px">Tap to change the champion - this feeds the Playoff tab. Unpicked remaining games don't count yet.</div>`;
+  document.querySelectorAll(`[data-champ="${cf}"]`).forEach(el=>el.onclick=()=>{CST[cf].champ=el.dataset.t;save();renderConf(cf);renderPlayoff()});
+ }else $("champ-"+cf).innerHTML="";
+ $("tb-"+cf).innerHTML=tbHTML(rec,g,fin,cf);
+}
+function champPick(cf,top2){
+ top2=top2||fullOrderRaw(cf).slice(0,2);
+ const cur=CST[cf].champ;
+ if(cur&&top2.indexOf(cur)>=0)return cur;
+ const a=top2[0],b=top2[1];
+ const fa=DATA[cf].fpi[a]||0,fb=DATA[cf].fpi[b]||0;
+ return fa>=fb?a:b}
+function fullOrderRaw(cf){const{rec,res}=scenRec(cf);return fullOrder(rec,buildCtx(res,DATA[cf].teams),rec,cf)}
+
+// ---------- plain-English scenario prompt (per conference) ----------
+const NORM=s=>s.toLowerCase().replace(/&/g,"").replace(/[’']/g,"").replace(/[^a-z0-9\s-]/g," ").replace(/\s+/g," ").trim();
+const EXTRA={
+ "SEC":{alabama:["bama","crimson tide","tide"],arkansas:["razorbacks","hogs"],auburn:[],florida:["gators","uf"],georgia:["uga","dawgs"],kentucky:["uk","wildcats"],lsu:[],["mississippi state"]:["miss state","msu"],missouri:["mizzou"],oklahoma:["ou","sooners"],["ole miss"]:["rebels"],["south carolina"]:["gamecocks","carolina","sc"],tennessee:["vols","volunteers"],texas:["longhorns"],["texas am"]:["tamu","aggies"],vanderbilt:["vandy","commodores"]},
+ "Big Ten":{illinois:["illini"],indiana:["iu","hoosiers"],iowa:["hawkeyes"],maryland:["terps"],michigan:["wolverines"],["michigan state"]:["msu","spartans"],minnesota:["gophers"],nebraska:["huskers","cornhuskers"],northwestern:["wildcats","nu"],["ohio state"]:["osu","buckeyes"],oregon:["ducks"],["penn state"]:["psu","nittany lions"],purdue:["boilermakers"],rutgers:["scarlet knights"],ucla:["bruins"],usc:["trojans"],washington:["uw","huskies"],wisconsin:["badgers"]},
+ "ACC":{["boston college"]:["bc"],california:["cal"],clemson:[],duke:["blue devils"],["florida state"]:["fsu","noles","seminoles"],["georgia tech"]:["gt","yellow jackets","jackets"],louisville:["cards","cardinals"],miami:["canes","hurricanes"],["nc state"]:["wolfpack","north carolina state"],["north carolina"]:["unc","tar heels","heels","carolina"],pittsburgh:["pitt","panthers"],smu:["mustangs"],stanford:["cardinal"],syracuse:["cuse","orange"],virginia:["uva","hoos","cavaliers","cavs"],["virginia tech"]:["vt","hokies"],["wake forest"]:["wake","deacs","demon deacons"]},
+ "Big 12":{arizona:["zona","uofa"],["arizona state"]:["az state","asu","sun devils"],baylor:["bears","bu"],byu:[],cincinnati:["cincy","bearcats","uc"],colorado:["buffs","buffaloes","cu"],houston:["uh"],["iowa state"]:["isu","cyclones"],kansas:["ku","jayhawks"],["kansas state"]:["k-state","kstate","ksu","wildcats"],["oklahoma state"]:["ok state","okstate","okie state","osu","pokes","cowboys"],tcu:["horned frogs","frogs"],["texas tech"]:["red raiders","tech","ttu"],ucf:["knights"],utah:["utes"],["west virginia"]:["wvu","mountaineers"]}};
+function aliasMap(cf){
+ const m={};
+ DATA[cf].teams.forEach(t=>{const n=NORM(t);m[n]=t;(EXTRA[cf]&&EXTRA[cf][n]||[]).forEach(a=>m[NORM(a)]=t)});
+ return m}
+function parseScenario(text,cf){
+ const AL=aliasMap(cf),ALTS=Object.keys(AL).sort((a,b)=>b.length-a.length).join("|");
+ const canon=a=>AL[a];
+ const sd=DATA[cf];
+ const remIdx=(x,y)=>sd.rem.findIndex(g=>(g[0]==x&&g[1]==y)||(g[0]==y&&g[1]==x));
+ const s=" "+NORM(text)+" ";
+ const T="\\b("+ALTS+")\\b";
+ const mask=new Array(s.length).fill(0);
+ const set=[],notes=[];
+ const rules=[
+  {re:new RegExp(T+"\\s+(?:and\\s+"+T+"\\s+)?(?:both\\s+)?(?:wins? out|wins? the rest|runs? the table|goes? undefeated|sweeps? the rest)(?:\\s+(?:except|but)(?:\\s+loses?)?(?:\\s+(?:to|at|vs|against))?\\s+"+T+")?","g"),
+   f:(a,b,x)=>{const ts=[canon(a)];if(b&&canon(b)!=ts[0])ts.push(canon(b));
+    ts.forEach(t=>{let n=0;sd.rem.forEach((g,i)=>{if(g[0]==t||g[1]==t){set.push({i,w:t});n++}});if(!n)notes.push(t+" has no remaining "+cf+" games.")});
+    if(x){const t=ts[0],o=canon(x),i=remIdx(t,o);if(i>=0)set.push({i,w:o});else notes.push("There is no remaining "+t+" vs "+o+" game to exclude.")}}},
+  {re:new RegExp(T+"\\s+(?:loses? out|goes? winless|loses? the rest|loses? them all|loses? every (?:remaining )?game)","g"),
+   f:a=>{const t=canon(a);let n=0;sd.rem.forEach((g,i)=>{if(g[0]==t||g[1]==t){set.push({i,w:g[0]==t?g[1]:g[0]});n++}});if(!n)notes.push(t+" has no remaining "+cf+" games.")}},
+  {re:new RegExp(T+"\\s+(?:beats?|defeats?|upsets?|tops?|stuns|knocks off|takes down|blows out|edges|handles|rolls(?: past)?|wins? (?:vs|at|over|against))\\s+"+T,"g"),
+   f:(a,b)=>{const w=canon(a),l=canon(b),i=remIdx(w,l);if(i>=0)set.push({i,w});else notes.push("There is no remaining "+w+" vs "+l+" game on the schedule.")}},
+  {re:new RegExp(T+"\\s+(?:loses?|falls|drops(?: a| the| one)?(?: game)?|gets beat|gets upset|gets blown out)(?:\\s+(?:to|at|vs|against|by))\\s+"+T,"g"),
+   f:(a,b)=>{const l=canon(a),w=canon(b),i=remIdx(w,l);if(i>=0)set.push({i,w});else notes.push("There is no remaining "+w+" vs "+l+" game on the schedule.")}}];
+ rules.forEach(r=>{let m;r.re.lastIndex=0;while((m=r.re.exec(s))){const st=m.index,en=st+m[0].length;let busy=false;for(let i=st;i<en;i++)if(mask[i]){busy=true;break}if(busy)continue;for(let i=st;i<en;i++)mask[i]=1;r.f.apply(null,m.slice(1))}});
+ let fail=[],cur="";
+ for(let i=0;i<=s.length;i++){if(i==s.length||mask[i]){const f=cur.trim();if(f&&!/^(and|then|also|plus|if|so|the)$/.test(f))fail.push(f);cur=""}else cur+=s[i]}
+ return{set,notes,fail}}
+function applyScenario(cf){
+ const txt=$("p-"+cf).value.trim(),out=$("po-"+cf);
+ if(!txt){out.innerHTML="";return}
+ const r=parseScenario(txt,cf),map={};r.set.forEach(e=>map[e.i]=e.w);
+ const sd=DATA[cf],picks=CST[cf].picks;
+ Object.keys(map).forEach(i=>picks["r"+i]=map[i]);
+ const idxs=Object.keys(map);let html="";
+ if(idxs.length){
+  const byW={};idxs.forEach(i=>{const g=sd.rem[i],w=map[i],l=w==g[0]?g[1]:g[0];(byW[w]=byW[w]||[]).push(l)});
+  html+='<div class="sub2" style="color:var(--ink)">Scenario applied - '+idxs.length+' pick'+(idxs.length==1?"":"s")+' set: '+Object.keys(byW).map(w=>"<b>"+w+"</b> over "+byW[w].join(", ")).join("; ")+". Tap any game below to adjust.</div>"}
+ r.notes.forEach(n=>html+='<div class="sub2" style="color:var(--a)">'+n+"</div>");
+ if(r.fail.length)html+='<div class="sub2" style="color:var(--a)">Couldn&#8217;t understand: &#8220;'+r.fail.join("&#8221;, &#8220;")+'&#8221; - try phrasing like &#8220;'+sd.teams[0]+' wins out&#8221; or &#8220;'+sd.teams[0]+' loses to '+sd.teams[1]+'&#8221;.</div>';
+ if(!idxs.length&&!r.fail.length)html='<div class="sub2" style="color:var(--a)">No picks were set.</div>';
+ out.innerHTML=html;save();renderConf(cf);renderPlayoff()}
+
+// ---------- persistence ----------
+const LSK="cfp-sandbox-v1";
+function save(){try{const o={picks:{},champ:{},ord:{},rank:RK&&RK.dirty?RK.order:null};CONFS.forEach(cf=>{o.picks[cf]=CST[cf].picks;o.champ[cf]=CST[cf].champ||null;o.ord[cf]=CST[cf].ord||{}});localStorage.setItem(LSK,JSON.stringify(o))}catch(e){}}
+function load(){try{const d=JSON.parse(localStorage.getItem(LSK));if(!d)return;CONFS.forEach(cf=>{if(d.picks&&d.picks[cf])CST[cf].picks=d.picks[cf];if(d.champ&&d.champ[cf])CST[cf].champ=d.champ[cf];if(d.ord&&d.ord[cf])CST[cf].ord=d.ord[cf]});if(d.rank)RK={order:d.rank,dirty:true,src:"your adjusted ranking (saved on this device)"}}catch(e){}}
+
+// ---------- playoff tab ----------
+let RK=null,rkSel=null;
+function rankBase(){return RK_ORDER.slice()}
+function ensureRank(){
+ if(RK)return;
+ const order=rankBase();
+ // make sure every projected champ, Notre Dame and the top G6 team are present
+ CONFS.forEach(cf=>{const c=champPick(cf);if(order.indexOf(c)<0)order.push(c)});
+ if(order.indexOf("Notre Dame")<0)order.push("Notre Dame");
+ const g6=G6TEAMS.filter(t=>order.indexOf(t)>=0);
+ if(!g6.length){let best=null,bf=-99;G6TEAMS.forEach(t=>{const f=FPI_ALL[t];if(f!=null&&f>bf){bf=f;best=t}});if(best)order.push(best)}
+ RK={order,dirty:false,src:RK_SRC}}
+function confOf(t){for(const cf of CONFS)if(DATA[cf].teams.indexOf(t)>=0)return cf;if(t=="Notre Dame")return "Ind";if(G6TEAMS.indexOf(t)>=0)return "G6";return ""}
+function computeField(){
+ const champs={};CONFS.forEach(cf=>champs[cf]=champPick(cf));
+ const order=RK.order;
+ const field=[];
+ CONFS.forEach(cf=>{const t=champs[cf];if(!field.find(f=>f.team==t))field.push({team:t,why:cf+" champion"+(provChamp(cf)?" (provisional - unresolved tiebreaker, see "+cf+" tab)":"")})});
+ const g6=order.find(t=>G6TEAMS.indexOf(t)>=0);
+ if(g6&&!field.find(f=>f.team==g6))field.push({team:g6,why:"highest-ranked Group of 6 team"});
+ const ndi=order.indexOf("Notre Dame");
+ if(ndi>=0&&ndi<12&&!field.find(f=>f.team=="Notre Dame"))field.push({team:"Notre Dame",why:"Notre Dame in the top 12"});
+ order.forEach(t=>{if(field.length>=12)return;if(!field.find(f=>f.team==t))field.push({team:t,why:"at-large"})});
+ field.sort((x,y)=>order.indexOf(x.team)-order.indexOf(y.team));
+ return field}
+function renderPlayoff(){
+ ensureRank();
+ const order=RK.order;
+ $("rk-src").innerHTML="Ranking source: <b>"+RK.src+"</b>"+(RK.dirty?" - you have manual adjustments.":"")+" This is a sandbox: your picks and ranking moves drive the field. Not a prediction.";
+ // champs row
+ let ch="";CONFS.forEach(cf=>{const t=champPick(cf);ch+=`<span class="chip2">${cf}: <b>${t}</b>${provChamp(cf)?'<span class="pbadge">prov</span>':""}</span>`});
+ $("champs").innerHTML='<div class="sub2" style="margin:6px 0">Projected champions (set on each conference tab):</div>'+ch;
+ // ranking list
+ $("ranklist").innerHTML='<h2 class="s">Your ranking - tap a team, then tap where it should move</h2>'+order.map((t,i)=>{
+  const c=confOf(t);
+  return`<div class="rk${rkSel==t?" sel":""}" data-t="${t}"><span class="rn">${i+1}</span><span class="rt">${t}</span><span class="rc">${c}</span></div>`}).join("");
+ document.querySelectorAll("#ranklist .rk").forEach(el=>{el.onclick=()=>{
+  const t=el.dataset.t;
+  if(rkSel==null){rkSel=t}else if(rkSel==t){rkSel=null}else{
+   const a=order.indexOf(rkSel),b=order.indexOf(t);
+   order.splice(b,0,order.splice(a,1)[0]);rkSel=null;RK.dirty=true;RK.src="your adjusted ranking";save()}
+  renderPlayoff()}});
+ const field=computeField();
+ const g6tag=t=>G6TEAMS.indexOf(t)>=0;
+ let fh='<h2 class="s">Projected playoff field</h2><table><tr><th>Seed</th><th>Team</th><th>How</th><th></th></tr>';
+ field.forEach((f,i)=>{
+  const bye=i<4?'<span class="byepill">bye</span>':"";
+  fh+=`<tr><td>${i+1}</td><td>${f.team}</td><td>${f.why}</td><td>${bye}</td></tr>`});
+ $("field").innerHTML=fh+"</table>";
+ const nm=i=>field[i]?`No. ${i+1} ${field[i].team}`:"?";
+ $("bracket").innerHTML=`<div class="tbcard"><h3>Bracket shape</h3><div class="sub2">First round Dec 18-19 at the higher seed's home field. Quarterfinals: 1 vs 8/9 winner, 2 vs 7/10 winner, 3 vs 6/11 winner, 4 vs 5/12 winner - no re-seeding.</div>
+ <div class="gline">${nm(7)} at ${nm(4)}</div>
+ <div class="gline">${nm(8)} at ${nm(3)}</div>
+ <div class="gline">${nm(9)} at ${nm(2)}</div>
+ <div class="gline">${nm(10)} at ${nm(1)}</div>
+ <div class="gline">${nm(11)} at ${nm(0)}</div></div>`;
+}
+
+// ---------- live refresh ----------
+let RK_ORDER=[],RK_SRC="AP Top 25 (week 9 snapshot, "+SNAPDATE+") - stand-in until CFP rankings start Nov 3";
+function applyGroup(cf,evts){
+ const sd=DATA[cf];
+ const rec={};sd.teams.forEach(t=>rec[t]=[0,0,0,0]);const rem=[],done=[],allg=[];
+ const idm={};
+ evts.filter(e=>e.season&&e.season.year==2026&&e.season.type==2).forEach(e=>{
+  const c=e.competitions[0],home=c.competitors.find(t=>t.homeAway=="home"),away=c.competitors.find(t=>t.homeAway=="away");
+  const h=home.team.id,a=away.team.id;
+  const hn=home.team.location||home.team.displayName,an=away.team.location||away.team.displayName;
+  const conf=!!c.conferenceCompetition;
+  if(conf){idm[h]=hn;idm[a]=an}
+  if(e.status.type.completed){
+   const hs=+home.score||0,as=+away.score||0;
+   if(conf){rec[hn]&&rec[hn][0]!==undefined&&(rec[hn][0]+=hs>as,rec[hn][1]+=hs<as);rec[an]&&rec[an][0]!==undefined&&(rec[an][0]+=as>hs,rec[an][1]+=as<hs);done.push([an,hn,as,hs,e.date.slice(0,10)])}
+   allg.push([h,a,hs,as]);
+  }else if(conf)rem.push([an,hn,e.date.slice(0,10)]);
+ });
+ if(done.length<10||!rem.length)return false;
+ // overall records
+ sd.teams.forEach(t=>{const o=[0,0];allg.forEach(g=>{const n1=idm[g[0]],n2=idm[g[1]];if(n1==t){o[0]+=g[2]>g[3];o[1]+=g[2]<g[3]}if(n2==t){o[0]+=g[3]>g[2];o[1]+=g[3]<g[2]}});rec[t][2]=o[0];rec[t][3]=o[1]});
+ sd.rec=rec;sd.rem=rem.sort((x,y)=>x[2]<y[2]?-1:1);sd.done=done.sort((x,y)=>x[4]<y[4]?-1:1);sd.allg=allg;sd.elo=null;sd.margin=null;sd.live=true;
+ return true}
+async function loadLive(){
+ const G={ACC:1,"Big 12":4,"Big Ten":5,SEC:8};
+ try{
+  const res=await Promise.all(Object.keys(G).map(cf=>fetch(`https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=${G[cf]}&dates=2026&limit=400`).then(r=>r.json()).then(d=>({cf,ev:d.events||[]}))));
+  res.forEach(r=>applyGroup(r.cf,r.ev));
+ }catch(e){}
+ try{
+  const fpi=await fetch("https://site.web.api.espn.com/apis/fitt/v3/sports/football/college-football/powerindex?region=us&lang=en&contentorigin=espn").then(r=>r.json());
+  const fp={};(fpi.teams||[]).forEach(e=>{const n=e.team.location||e.team.displayName;fp[n]=Math.round(e.categories[0].values[0]*10)/10});
+  CONFS.forEach(cf=>{DATA[cf].teams.forEach(t=>{if(fp[t]!=null)DATA[cf].fpi[t]=fp[t]})});
+  Object.assign(FPI_ALL,fp);
+ }catch(e){}
+ try{
+  const rk=await fetch("https://site.api.espn.com/apis/site/v2/sports/football/college-football/rankings").then(r=>r.json());
+  const polls=rk.rankings||[];
+  const cfp=polls.find(p=>/playoff/i.test(p.name||""));
+  const ap=polls.find(p=>/AP Top 25/.test(p.name||""));
+  const use=cfp||ap;
+  if(use){
+   const list=use.ranks.map(t=>(t.team.location||t.team.displayName));
+   RK_ORDER=list;
+   RK_SRC=(cfp?"CFP selection committee rankings":"AP Top 25")+" (live"+(use.occurrence&&use.occurrence.displayValue?", "+use.occurrence.displayValue:"")+")"+(cfp?"":" - stand-in until CFP rankings start");
+   if(RK&&!RK.dirty)RK=null;
+  }
+ }catch(e){}
+ CONFS.forEach(cf=>{
+  $("src-"+cf).innerHTML=(DATA[cf].live?"LIVE from ESPN (results, schedule and FPI refresh on every visit)":"STATIC SNAPSHOT from "+SNAPDATE+" (ESPN unreachable right now)")+". Tap a team to set or flip the winner; remaining games you don't pick simply don't count.";
+  renderConf(cf)});
+ renderPlayoff()}
+
+// ---------- nav + boot ----------
+function showTab(v){
+ document.querySelectorAll(".cview").forEach(d=>d.style.display="none");
+ $("view-"+v).style.display="";
+ document.querySelectorAll(".tabbtn").forEach(b=>b.classList.toggle("p",b.dataset.v==v));
+ $("tabs").classList.remove("open");
+ if(v!="Playoff")renderConf(v);else renderPlayoff();
+}
+function boot(){
+ CONFS.forEach(cf=>{CST[cf]={picks:{},champ:null}});
+ RK={order:AP.map(x=>x[1]),dirty:false,src:RK_SRC};
+ RK_ORDER=AP.map(x=>x[1]);
+ load();
+ CONFS.forEach(cf=>{
+  $("auto-"+cf).onclick=()=>{const m=$("m-"+cf).value;DATA[cf].rem.forEach((gm,i)=>{const p=winProb(cf,m,gm[1],gm[0]);CST[cf].picks["r"+i]=p>=.5?gm[1]:gm[0]});save();renderConf(cf);renderPlayoff()};
+  $("reset-"+cf).onclick=()=>{CST[cf].picks={};CST[cf].champ=null;save();renderConf(cf);renderPlayoff()};
+  $("pa-"+cf).onclick=()=>applyScenario(cf);
+  $("p-"+cf).addEventListener("keydown",e=>{if(e.key=="Enter")applyScenario(cf)});
+ });
+ document.querySelectorAll(".tabbtn").forEach(b=>b.onclick=()=>showTab(b.dataset.v));
+ $("burger").onclick=()=>$("tabs").classList.toggle("open");
+ $("rk-reset").onclick=()=>{RK=null;rkSel=null;save();renderPlayoff()};
+ showTab("Playoff");
+ loadLive();
+}
+boot();
+
+</script></body></html>
