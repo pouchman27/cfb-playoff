@@ -240,7 +240,10 @@ function seedOneX(pool,g,fin,cf){
   }
  }
  if(cand.length==1)return{winner:cand[0],mkReason:null};
- const w=cand[Math.random()*cand.length|0];
+ const key=cf+"|"+cand.slice().sort().join("|")+"|"+JSON.stringify((CST[cf]&&CST[cf].picks)||{});
+ let h=2166136261;for(let i=0;i<key.length;i++){h^=key.charCodeAt(i);h=Math.imul(h,16777619)}
+ h=Math.imul(h^h>>>15,2246822507);h=Math.imul(h^h>>>13,3266489909);h^=h>>>16;
+ const w=cand[(h>>>0)%cand.length];
  return{winner:w,prov:true,mkReason:n=>`No on-field separation - under the official ${cf} procedure this would fall to ${STEPS[cf].tail}, which this app cannot compute. PROVISIONAL (resolved randomly here; swap it below if you disagree)`}}
 function rankTied(group,g,fin,cf){const out=[],p=group.slice();while(p.length>1){const r=seedOneX(p,g,fin,cf);out.push(r);p.splice(p.indexOf(r.winner),1)}out.push({winner:p[0],mkReason:null});return out}
 function confGroups(rec,cf){const pct=t=>rec[t][0]/(rec[t][0]+rec[t][1]||1);const groups=[];DATA[cf].teams.slice().sort((x,y)=>pct(y)-pct(x)||rec[x][1]-rec[y][1]).forEach(t=>{const gr=groups.find(gr=>Math.abs(pct(gr[0])-pct(t))<1e-9);if(gr)gr.push(t);else groups.push([t])});return groups}
@@ -454,11 +457,10 @@ function renderPlayoff(){
  $("field").innerHTML=fh+"</table>";
  const nm=i=>field[i]?`No. ${i+1} ${field[i].team}`:"?";
  $("bracket").innerHTML=`<div class="tbcard"><h3>Bracket shape</h3><div class="sub2">First round Dec 18-19 at the higher seed's home field. Quarterfinals: 1 vs 8/9 winner, 2 vs 7/10 winner, 3 vs 6/11 winner, 4 vs 5/12 winner - no re-seeding.</div>
- <div class="gline">${nm(7)} at ${nm(4)}</div>
- <div class="gline">${nm(8)} at ${nm(3)}</div>
- <div class="gline">${nm(9)} at ${nm(2)}</div>
- <div class="gline">${nm(10)} at ${nm(1)}</div>
- <div class="gline">${nm(11)} at ${nm(0)}</div></div>`;
+ <div class="gline">${nm(11)} at ${nm(4)}</div>
+ <div class="gline">${nm(10)} at ${nm(5)}</div>
+ <div class="gline">${nm(9)} at ${nm(6)}</div>
+ <div class="gline">${nm(8)} at ${nm(7)}</div></div>`;
 }
 
 // ---------- live refresh ----------
