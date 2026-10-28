@@ -431,7 +431,7 @@ function computeField(){
 function renderPlayoff(){
  ensureRank();
  const order=RK.order;
- $("rk-src").innerHTML="Ranking source: <b>"+RK.src+"</b>"+(RK.dirty?" - you have manual adjustments.":"")+" This is a sandbox: your picks and ranking moves drive the field. Not a prediction.";
+ $("rk-src").innerHTML="Ranking source: <b>"+RK.src+"</b>"+(RK.dirty?" - you have manual adjustments.":"")+". This is a sandbox: your picks and ranking moves drive the field. Not a prediction.";
  // champs row
  let ch="";CONFS.forEach(cf=>{const t=champPick(cf);ch+=`<span class="chip2">${cf}: <b>${t}</b>${provChamp(cf)?'<span class="pbadge">prov</span>':""}</span>`});
  $("champs").innerHTML='<div class="sub2" style="margin:6px 0">Projected champions (set on each conference tab):</div>'+ch;
