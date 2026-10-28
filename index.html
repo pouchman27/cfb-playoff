@@ -30,7 +30,7 @@ tr.provrow td{background:#241d10}
 .xl{background:var(--card);color:var(--ink);border:1px solid #2c3858;border-radius:9px;padding:10px 14px;font:inherit;text-decoration:none;display:inline-block}.xl:hover{filter:brightness(1.15)}
 /* nav */
 .nav{position:relative;max-width:900px;margin:10px auto 0;padding:0 12px}
-#burger{display:none;font-size:20px;padding:8px 14px}
+#burger{display:none;font-size:20px;padding:8px 14px;position:relative;z-index:60}
 .tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 @media(max-width:760px){
  #burger{display:block;margin:0 auto}
@@ -53,7 +53,7 @@ tr.provrow td{background:#241d10}
 </style></head><body>
 <header><h1>CFB Playoff Sandbox</h1><p>Play out the Power 4 races, move teams in the ranking, and watch the 12-team playoff field change. Deep-dive tools live on the sister sites.</p></header>
 <div class="nav">
-<button id="burger" aria-label="Open menu">&#9776; Menu</button>
+<button id="burger" aria-label="Menu" aria-expanded="false" aria-controls="tabs">&#9776; Menu</button>
 <div class="tabs" id="tabs">
 <button class="tabbtn" data-v="Playoff">Playoff</button><button class="tabbtn" data-v="SEC">SEC</button><button class="tabbtn" data-v="Big Ten">Big Ten</button><button class="tabbtn" data-v="ACC">ACC</button><button class="tabbtn" data-v="Big 12">Big 12</button>
 <a class="xl" href="https://pouchman27.github.io/big12-standings/">Big 12 deep dive</a>
@@ -521,7 +521,7 @@ function showTab(v){
  document.querySelectorAll(".cview").forEach(d=>d.style.display="none");
  $("view-"+v).style.display="";
  document.querySelectorAll(".tabbtn").forEach(b=>b.classList.toggle("p",b.dataset.v==v));
- $("tabs").classList.remove("open");
+ $("tabs").classList.remove("open");const _b=$("burger");if(_b){_b.setAttribute("aria-expanded","false");_b.innerHTML="&#9776; Menu"}
  if(v!="Playoff")renderConf(v);else renderPlayoff();
 }
 function boot(){
@@ -536,7 +536,7 @@ function boot(){
   $("p-"+cf).addEventListener("keydown",e=>{if(e.key=="Enter")applyScenario(cf)});
  });
  document.querySelectorAll(".tabbtn").forEach(b=>b.onclick=()=>showTab(b.dataset.v));
- $("burger").onclick=()=>$("tabs").classList.toggle("open");
+ $("burger").onclick=()=>{const t=$("tabs"),open=t.classList.toggle("open");const b=$("burger");b.setAttribute("aria-expanded",open?"true":"false");b.innerHTML=open?"&#10005; Close":"&#9776; Menu"};
  $("rk-reset").onclick=()=>{RK=null;rkSel=null;save();renderPlayoff()};
  showTab("Playoff");
  loadLive();
